@@ -1,19 +1,29 @@
-import sqlite3
+from flask import Flask, render_template, request, redirect, url_for
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy import Integer, String, Float
 
-# Create a connection object
-conn = sqlite3.connect('mydatabase.db')
+class Base(DeclarativeBase):
+    pass
 
-# Create a cursor object
-cursor = conn.cursor()
+db = SQLAlchemy(model_class=Base)
 
-# Create a table
-# cursor.execute('''CREATE TABLE songs
-#                   (song_id integer primary key, artist text not null, name text not null)''')
+app = Flask(__name__)
 
-# Insert data
-# # cursor.execute("INSERT INTO songs VALUES (1, 'Taylor Swift', 'Love Story')")
-# cursor.execute("INSERT INTO songs VALUES (2, 'Taylor Swift', 'You Belong With Me')")
-# cursor.execute("INSERT INTO songs VALUES (3, 'Justin Bieber', 'Baby')")
-# cursor.execute("INSERT INTO songs VALUES (4, 'Justin Bieber', 'Love Yourself')")
-cursor.execute("INSERT INTO songs VALUES (5, 'Ed Sheeran', 'Shape of You')")
-conn.commit()
+app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///books-collection.db"
+
+db.init_app(app)
+
+class Book(db.Model):
+    id : Mapped[int] = mapped_column(Integer, primary_key=True)
+    title : Mapped[str] = mapped_column(String, nullable=False)
+    author : Mapped[str] = mapped_column(String, nullable=False)
+    rating : Mapped[float] = mapped_column(Float, nullable=False)
+
+with app.app_context():
+    db.create_all()
+
+with app.app_context():
+    new_book = Book(id=1, title="Harry Potter", author="J. K. Rowling", rating=9.3)
+    db.session.add(new_book)
+    db.session.commit()
