@@ -56,6 +56,29 @@ def add():
         return redirect(url_for('home'))
     return render_template("add.html")
 
+#to pass varaiables in the url, use <variable_name> and further we can use variable name in the function
+#for example here we are passing bookid in the url
+
+
+@app.route("/edit", methods=["GET", "POST"])
+def edit():
+    if request.method == "POST":
+        with app.app_context():
+            book_id = request.args.get("id")
+            new_rating = request.form["newrating"]
+            db.session.execute(db.update(Book).where(Book.id == book_id).values(rating=new_rating))
+            db.session.commit()
+        return redirect(url_for('home'))
+    
+    with app.app_context():
+        #index page passes book id as a paraeter for url_for in order to retrieve it here
+        book_id = request.args.get("id")
+        print(book_id)
+        #To retrieve the title of the book
+        result = db.session.execute(db.select(Book).where(Book.id == book_id)).scalar()
+        title = result.title
+        return render_template("edit.html", bktitle=title, bkid = book_id)
+
 
 if __name__ == "__main__":
     app.run(debug=True)
