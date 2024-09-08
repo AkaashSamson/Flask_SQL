@@ -1,14 +1,10 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Edit Rating</title>
-</head>
-<body>
-    <p>Book Title: {{bktitle}} </p>
+{% extends 'base.html' %}
 
-    <form action="{{url_for('edit', id = bkid)}}" method="POST">
-        <label>New Rating</label>
-        <input type="text" name="newrating"/>
-        <button type="submit">Edit Rating</button>
-</body>
-</html>
+{% block title %}Edit Movies{% endblock %}
+
+{% block content %}
+<div class="content">
+  <h1 class="heading">Movie Title</h1>
+    <p class="description">Edit Movie Rating</p>
+  </div>
+{% endblock %}
