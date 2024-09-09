@@ -27,10 +27,10 @@ class base(DeclarativeBase):
 db = SQLAlchemy(model_class=base)
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
+app.secret_key = "randomrubbishstring"
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///movies.db'
-Bootstrap5(app)
 
+bootstrap = Bootstrap5(app)
 db.init_app(app)
 
 class Movie(db.Model):
@@ -63,10 +63,14 @@ with app.app_context():
 
 
 
-# CREA DB
+class EditForm(FlaskForm):
+    review = StringField("Review", validators=[])
+    rating = StringField("Rating", validators=[])
+    image_url = StringField("Image URL", validators = [])
+    submit = SubmitField("Done")
 
 
-# CREATE TABLE
+
 
 
 @app.route("/")
@@ -76,6 +80,23 @@ def home():
         all_movies = movies.scalars()
         return render_template("index.html", movies=all_movies)
 
-
+@app.route("/edit", methods=["GET", "POST"])
+def edit():
+    edit_form = EditForm()
+    movie_title = request.args.get("title")
+    movie_id = request.args.get("id")
+    if edit_form.validate_on_submit():
+        with app.app_context():
+            movie = db.session.execute(db.select(Movie).where(Movie.id == movie_id)).scalar()
+            if edit_form.image_url.data:
+                movie.img_url = edit_form.image_url.data
+            if edit_form.rating.data:
+                movie.rating = edit_form.rating.data
+            if edit_form.review.data:
+                movie.review = edit_form.review.data
+            db.session.commit()
+        return redirect(url_for('home'))
+    return render_template("edit.html", form=edit_form, m_title=movie_title, m_id=movie_id)
+        
 if __name__ == '__main__':
     app.run(debug=True)
