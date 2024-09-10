@@ -21,6 +21,13 @@ pip3 install -r requirements.txt
 This will install the packages from requirements.txt for this project.
 '''
 
+url = "https://api.themoviedb.org/3/search/movie?query="
+
+headers = {
+    "accept": "application/json",
+    "Authorization": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJlYjExNTkwNGQxNzFmNTUyYTM1ZDcyY2VmYWNlMjk0OCIsIm5iZiI6MTcyNTk3ODI4NS4xNzE3NDYsInN1YiI6IjY2ZGZkOWFlMDAwMDAwMDAwMGE0Njk2OSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.o4PCjZY6YFtTYDkB47iLBPbsQPbRP9iHYaXz8e0OQhw"
+}
+
 class base(DeclarativeBase):
     pass
 
@@ -62,14 +69,15 @@ with app.app_context():
 #     db.session.commit()
 
 
-
 class EditForm(FlaskForm):
     review = StringField("Review")
     rating = StringField("Rating")
     image_url = StringField("Image URL")
     submit = SubmitField("Done")
 
-
+class AddForm(FlaskForm):
+    title = StringField("Movie Title", validators=[DataRequired()])
+    submit = SubmitField("Add Movie")
 
 
 @app.route("/")
@@ -78,6 +86,7 @@ def home():
         movies = db.session.execute(db.select(Movie))
         all_movies = movies.scalars()
         return render_template("index.html", movies=all_movies)
+
 
 @app.route("/edit", methods=["GET", "POST"])
 def edit():
@@ -105,6 +114,39 @@ def delete():
         db.session.delete(movie)
         db.session.commit()
     return redirect(url_for('home'))
-        
+
+
+@app.route("/add", methods=["GET", "POST"])
+def add():
+    add_form = AddForm()
+    if add_form.validate_on_submit():
+        title = add_form.title.data
+        response = requests.get(url + "'"+title+"'", headers=headers)
+        data = response.json()
+        #to get the list of objects reults from json data
+
+        movie_data = data["results"] 
+        return render_template("select.html", data=movie_data)
+    return render_template("add.html", form=add_form)
+
+@app.route("/select", methods=["GET", "POST"])
+def select():
+    movie_data = request.args.get("Movie")
+    with app.app_context():
+        # year = movie_data.release_date
+        new_movie = Movie(
+    title=movie_data.title,
+    year=movie_data.release_date,
+    description=movie_data.overview,
+    rating=movie_data.vote_average,
+    ranking=movie_data.popularity,
+    review="",
+    img_url=movie_data.poster_path
+   )
+    db.session.add(new_movie)
+    db.session.commit()
+    return redirect(url_for('home'))
+
+
 if __name__ == '__main__':
     app.run(debug=True)
