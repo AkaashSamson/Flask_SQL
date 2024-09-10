@@ -64,11 +64,10 @@ with app.app_context():
 
 
 class EditForm(FlaskForm):
-    review = StringField("Review", validators=[])
-    rating = StringField("Rating", validators=[])
-    image_url = StringField("Image URL", validators = [])
+    review = StringField("Review")
+    rating = StringField("Rating")
+    image_url = StringField("Image URL")
     submit = SubmitField("Done")
-
 
 
 
@@ -97,6 +96,15 @@ def edit():
             db.session.commit()
         return redirect(url_for('home'))
     return render_template("edit.html", form=edit_form, m_title=movie_title, m_id=movie_id)
+
+@app.route("/delete")
+def delete():
+    movie_id = request.args.get("id")
+    with app.app_context():
+        movie = db.session.execute(db.select(Movie).where(Movie.id == movie_id)).scalar()
+        db.session.delete(movie)
+        db.session.commit()
+    return redirect(url_for('home'))
         
 if __name__ == '__main__':
     app.run(debug=True)
