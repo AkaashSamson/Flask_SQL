@@ -131,17 +131,20 @@ def add():
 
 @app.route("/select", methods=["GET", "POST"])
 def select():
-    movie_data = request.args.get("Movie")
+    movie_id = request.args.get("id")
+    response = requests.get(f"https://api.themoviedb.org/3/movie/{movie_id}", headers=headers)
+    movie_data = response.json()
+    print(movie_data)
     with app.app_context():
         # year = movie_data.release_date
         new_movie = Movie(
-    title=movie_data.title,
-    year=movie_data.release_date,
-    description=movie_data.overview,
-    rating=movie_data.vote_average,
-    ranking=movie_data.popularity,
+    title=movie_data["title"],
+    year=movie_data["release_date"],
+    description=movie_data["overview"],
+    rating=movie_data["vote_average"],
+    ranking=movie_data["popularity"],
     review="",
-    img_url=movie_data.poster_path
+    img_url=f"https://image.tmdb.org/t/p/w500{movie_data['poster_path']}",
    )
     db.session.add(new_movie)
     db.session.commit()
