@@ -83,7 +83,7 @@ class AddForm(FlaskForm):
 @app.route("/")
 def home():
     with app.app_context():
-        movies = db.session.execute(db.select(Movie))
+        movies = db.session.execute(db.select(Movie).order_by(Movie.ranking.desc()))
         all_movies = movies.scalars()
         return render_template("index.html", movies=all_movies)
 
@@ -148,7 +148,7 @@ def select():
    )
     db.session.add(new_movie)
     db.session.commit()
-    return redirect(url_for('home'))
+    return redirect(url_for('edit', title = new_movie.title, id = new_movie.id))
 
 
 if __name__ == '__main__':
