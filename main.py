@@ -46,8 +46,8 @@ class Movie(db.Model):
     year : Mapped[int] = mapped_column(Integer, nullable=False)
     description : Mapped[str] = mapped_column(String, nullable=False)
     rating : Mapped[float] = mapped_column(Float, nullable=False)
-    ranking : Mapped[int] = mapped_column(Integer, nullable=False)
-    review : Mapped[str] = mapped_column(String, nullable=False)
+    ranking : Mapped[int] = mapped_column(Integer)
+    review : Mapped[str] = mapped_column(String)
     img_url : Mapped[str] = mapped_column(String, nullable=False)
 
 with app.app_context():
@@ -71,7 +71,7 @@ with app.app_context():
 
 class EditForm(FlaskForm):
     review = StringField("Review")
-    rating = StringField("Rating")
+    ranking = StringField("Ranking")
     image_url = StringField("Image URL")
     submit = SubmitField("Done")
 
@@ -98,8 +98,8 @@ def edit():
             movie = db.session.execute(db.select(Movie).where(Movie.id == movie_id)).scalar()
             if edit_form.image_url.data:
                 movie.img_url = edit_form.image_url.data
-            if edit_form.rating.data:
-                movie.rating = edit_form.rating.data
+            if edit_form.ranking.data:
+                movie.ranking = edit_form.ranking.data
             if edit_form.review.data:
                 movie.review = edit_form.review.data
             db.session.commit()
@@ -139,10 +139,10 @@ def select():
         # year = movie_data.release_date
         new_movie = Movie(
     title=movie_data["title"],
-    year=movie_data["release_date"],
+    year=movie_data["release_date"][:4],
     description=movie_data["overview"],
     rating=movie_data["vote_average"],
-    ranking=movie_data["popularity"],
+    ranking=0,
     review="",
     img_url=f"https://image.tmdb.org/t/p/w500{movie_data['poster_path']}",
    )
